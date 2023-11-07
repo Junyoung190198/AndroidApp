@@ -1,0 +1,63 @@
+<html>
+<head>
+<title>SecondFragment.kt</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #808080;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+SecondFragment.kt</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.myapp.myapplication</span>
+
+<span class="s1">import android.os.Bundle</span>
+<span class="s1">import androidx.fragment.app.Fragment</span>
+<span class="s1">import android.view.LayoutInflater</span>
+<span class="s1">import android.view.View</span>
+<span class="s1">import android.view.ViewGroup</span>
+<span class="s1">import androidx.navigation.fragment.findNavController</span>
+<span class="s1">import com.myapp.myapplication.databinding.FragmentSecondBinding</span>
+
+<span class="s2">/**</span>
+ <span class="s2">* A simple [Fragment] subclass as the second destination in the navigation.</span>
+ <span class="s2">*/</span>
+<span class="s0">class </span><span class="s1">SecondFragment : Fragment() {</span>
+
+    <span class="s1">private </span><span class="s0">var </span><span class="s1">_binding: FragmentSecondBinding? = </span><span class="s0">null</span>
+
+    <span class="s3">// This property is only valid between onCreateView and</span>
+    <span class="s3">// onDestroyView.</span>
+    <span class="s1">private </span><span class="s0">val </span><span class="s1">binding get() = _binding!!</span>
+
+    <span class="s1">override </span><span class="s0">fun </span><span class="s1">onCreateView(</span>
+        <span class="s1">inflater: LayoutInflater</span><span class="s0">, </span><span class="s1">container: ViewGroup?</span><span class="s0">,</span>
+        <span class="s1">savedInstanceState: Bundle?</span>
+    <span class="s1">): View? {</span>
+
+        <span class="s1">_binding = FragmentSecondBinding.inflate(inflater</span><span class="s0">, </span><span class="s1">container</span><span class="s0">, false</span><span class="s1">)</span>
+        <span class="s0">return </span><span class="s1">binding.root</span>
+
+    <span class="s1">}</span>
+
+    <span class="s1">override </span><span class="s0">fun </span><span class="s1">onViewCreated(view: View</span><span class="s0">, </span><span class="s1">savedInstanceState: Bundle?) {</span>
+        <span class="s0">super</span><span class="s1">.onViewCreated(view</span><span class="s0">, </span><span class="s1">savedInstanceState)</span>
+
+        <span class="s1">binding.buttonSecond.setOnClickListener {</span>
+            <span class="s1">findNavController().navigate(R.id.action_SecondFragment_to_FirstFragment)</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s1">override </span><span class="s0">fun </span><span class="s1">onDestroyView() {</span>
+        <span class="s0">super</span><span class="s1">.onDestroyView()</span>
+        <span class="s1">_binding = </span><span class="s0">null</span>
+    <span class="s1">}</span>
+<span class="s1">}</span></pre>
+</body>
+</html>
