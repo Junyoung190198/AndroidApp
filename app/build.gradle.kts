@@ -45,6 +45,7 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.4")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.4")
     implementation ("com.opencsv:opencsv:5.5")
+    implementation ("com.google.code.gson:gson:2.8.8")
     implementation("com.squareup.okhttp3:okhttp:4.9.2")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
