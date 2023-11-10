@@ -1,31 +1,25 @@
 package com.myapp.myapplication
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
-import android.provider.ContactsContract
-import android.widget.TextView
+import android.widget.Button
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import okhttp3.*
+import java.io.File
+import java.io.FileWriter
 import java.io.IOException
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import android.view.View
 
-data class TextMessage(val sender: String, val phoneNumber: String, val message: String)
+
 
 class MainActivity : AppCompatActivity() {
     private var smsTextView: TextView? = null
-    private val client = OkHttpClient()
+
 
     private val requestSmsPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            requestContactsPermission();
+            requestContactsPermission()
         } else {
             Toast.makeText(this, "SMS permission denied", Toast.LENGTH_SHORT).show()
         }
@@ -35,47 +29,27 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            readSmsAndSendToServer()
+            readSmsAndSaveToCsv()
         } else {
             Toast.makeText(this@MainActivity, "File upload failed", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        smsTextView = findViewById(R.id.sms_text_view)
-        checkSmsPermission()
     }
 
     private fun checkSmsPermission() {
-        val smsPermission = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.READ_SMS
-        )
 
-        if (smsPermission == PackageManager.PERMISSION_GRANTED) {
-            requestContactsPermission();
-        } else {
-            requestSmsPermissionLauncher.launch(Manifest.permission.READ_SMS)
-        }
     }
 
+    // Function to request contacts permission
     private fun requestContactsPermission() {
-        val contactsPermission = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.READ_CONTACTS
-        )
 
-        if (contactsPermission == PackageManager.PERMISSION_GRANTED) {
-            readSmsAndSendToServer()
-        } else {
-            Toast.makeText(this@MainActivity, "File upload failed", Toast.LENGTH_SHORT).show()
-        }
     }
 
+    // Function to get contact name
     private fun getContactName(phoneNumber: String): String {
-        val uri: Uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber))
+        val uri: Uri = Uri.withAppendedPath(
+            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+            Uri.encode(phoneNumber)
+        )
         val cursor = contentResolver.query(
             uri,
             arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME),
@@ -98,68 +72,74 @@ class MainActivity : AppCompatActivity() {
         } ?: "Unknown"
     }
 
-    private fun readSmsAndSendToServer() {
-        val url = "http://192.168.56.1:8080/upload" // Replace with your server's URL
+
+    // Function to read SMS and save to CSV
+    private fun readSmsAndSaveToCsv() {
+        // Create a list to store TextMessage objects
         val messages = mutableListOf<TextMessage>()
 
+        // Define the URI for the SMS inbox
         val uri = Uri.parse("content://sms/inbox")
+
+        // Query the content resolver to retrieve SMS messages
         val cursor = contentResolver.query(uri, null, null, null, null)
 
         cursor?.use { cursor ->
+            // Check if there are any SMS messages
             if (cursor.moveToFirst()) {
+                // Define column indices for phone number and message body
                 val phoneNumberIndex = cursor.getColumnIndex("address")
                 val messageIndex = cursor.getColumnIndex("body")
 
+                // Iterate through the cursor to retrieve messages
                 do {
+                    // Extract phone number and message body
                     val phoneNumber = cursor.getString(phoneNumberIndex) ?: "Unknown"
                     val message = cursor.getString(messageIndex) ?: ""
 
-                    val textMessage = TextMessage("Your App Name", phoneNumber, message)
+                    // Get contact name using the phoneNumber
+                    val contactName = getContactName(phoneNumber)
+
+                    // Create a TextMessage object and add it to the list
+                    val textMessage = TextMessage(contactName, phoneNumber, message)
                     messages.add(textMessage)
                 } while (cursor.moveToNext())
 
-                // Send each message to the server
-                messages.forEach { textMessage ->
-                    val json = """
-                        {
-                            "sender": "${textMessage.sender}",
-                            "phoneNumber": "${textMessage.phoneNumber}",
-                            "message": "${textMessage.message}"
-                        }
-                    """
+                // CSV saving logic
+                try {
+                    val fileName = "sms_data.csv"
+                    val filePath = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
+                    val writer = FileWriter(filePath, true) // Append to the existing file
 
-                    val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), json)
-                    val request = Request.Builder()
-                        .url(url)
-                        .post(body)
-                        .build()
+                    messages.forEach { textMessage ->
+                        // Convert each message to CSV format and write to the file
+                        val csvLine = "${textMessage.sender},${textMessage.phoneNumber},${textMessage.message}\n"
+                        writer.write(csvLine)
+                    }
 
-                    client.newCall(request).enqueue(object : Callback {
-                        override fun onFailure(call: Call, e: IOException) {
-                            runOnUiThread {
-                                Toast.makeText(this@MainActivity, "Message send failed", Toast.LENGTH_SHORT).show()
-                            }
-                        }
+                    // Close the FileWriter
+                    writer.close()
 
-                        override fun onResponse(call: Call, response: Response) {
-                            if (response.isSuccessful) {
-                                runOnUiThread {
-                                    Toast.makeText(this@MainActivity, "Message sent successfully", Toast.LENGTH_SHORT).show()
-                                }
-                            } else {
-                                val responseCode = response.code
-                                runOnUiThread {
-                                    Toast.makeText(this@MainActivity, "Message send failed: $responseCode", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-                    })
+                    runOnUiThread {
+                        Toast.makeText(this@MainActivity, "Messages saved to CSV", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: IOException) {
+                    runOnUiThread {
+                        Toast.makeText(this@MainActivity, "CSV file save failed", Toast.LENGTH_SHORT).show()
+                    }
+                    e.printStackTrace()
                 }
             } else {
+                // Handle the case where no SMS messages are found
                 runOnUiThread {
                     Toast.makeText(this@MainActivity, "No SMS messages found", Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+
+    // Button click handler
+    fun onSaveToCsvButtonClick(view:View){
+        readSmsAndSaveToCsv()
     }
 }

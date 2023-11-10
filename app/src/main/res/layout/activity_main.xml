@@ -5,9 +5,17 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+
     <TextView
         android:id="@+id/sms_text_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/saveToCsvButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="메세지를 CSV 파일로 저장하실까요?"
+        android:layout_gravity="center"
+        android:onClick="onSaveToCsvButtonClick" />
 
 </LinearLayout>
