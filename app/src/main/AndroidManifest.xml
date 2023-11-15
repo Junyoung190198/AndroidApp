@@ -31,14 +31,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <receiver
-            android:name=".SmsReceiverService"
-            android:enabled="true"
+        
+        <service
+            android:name="Push_notifi.Push_noti_service"
             android:exported="true">
+
             <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
-        </receiver>
+
+        </service>
+
+
+
     </application>
 </manifest>

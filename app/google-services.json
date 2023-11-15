@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "881409953355",
+    "project_id": "dgu-pj-dokgurdongrak",
+    "storage_bucket": "dgu-pj-dokgurdongrak.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:881409953355:android:9c8f44d1963addf7d947ce",
+        "android_client_info": {
+          "package_name": "com.myapp.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgB-ppoNITxRvb1yPqqnUXuSBamE0Idt8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
