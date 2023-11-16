@@ -44,8 +44,12 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.4")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.4")
-    implementation ("com.opencsv:opencsv:5.5")
-    implementation ("com.google.code.gson:gson:2.8.8")
+    implementation("com.opencsv:opencsv:5.5")
+    implementation("com.google.code.gson:gson:2.8.8")
+
+    // Use the latest version available on Maven Central
+    implementation("com.github.andiradulescu:androidmms:1.1.1")
+
     implementation("com.squareup.okhttp3:okhttp:4.9.2")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

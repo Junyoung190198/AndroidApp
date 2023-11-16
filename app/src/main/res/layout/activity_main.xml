@@ -16,6 +16,8 @@
         android:layout_height="wrap_content"
         android:text="메세지를 CSV 파일로 저장하실까요?"
         android:layout_gravity="center"
+        android:width="200dp"
+        android:height="80dp"
         android:onClick="onSaveToCsvButtonClick" />
 
 </LinearLayout>
