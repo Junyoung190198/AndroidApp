@@ -5,10 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.telephony.SmsMessage
 
-
 class SmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (Telephony.Sms.Intents.SMS_RECEIVED_ACTION == intent?.action) {
+        if (intent?.action == "android.provider.Telephony.SMS_RECEIVED") {
             val pdus = intent.getSerializableExtra("pdus") as Array<*>?
             if (pdus != null) {
                 for (pdu in pdus) {
@@ -19,10 +18,12 @@ class SmsReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun handleSms(context: Context, sms: SmsMessage) {
+    private fun handleSms(context: Context?, sms: SmsMessage) {
+        // Handle the SMS message here
         val sender = sms.originatingAddress
         val messageBody = sms.messageBody
-        // Handle the SMS message here
-    }
 
+        // Now, you can decide how to save or process the SMS data
+        (context as? MainActivity)?.saveToCsv(sender, messageBody)
+    }
 }
