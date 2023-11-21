@@ -41,6 +41,7 @@ object MmsParser {
         return ""
     }
 
+
     // Helper function to find the index of a specific MMS part
     private fun findMmsPartIndex(pdu: ByteArray, partName: String): Int {
         val partStart = "--$partName".toByteArray(Charsets.UTF_8)
@@ -48,26 +49,27 @@ object MmsParser {
 
         for (i in pdu.indices) {
             if (pdu.copyOfRange(i, i + partStart.size).contentEquals(partStart)) {
-                val endIndex = pdu.indexOf(partEnd[0].toInt(), i)
-
+                val endIndex = pdu.indexOf(partEnd[0], i)
 
                 if (endIndex != -1) {
                     return i
                 }
             }
         }
-
         return -1
     }
 }
 
-class MmsReceiver : BroadcastReceiver() {
+    class MmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (Telephony.Sms.Intents.WAP_PUSH_RECEIVED_ACTION == intent?.action) {
             val data = intent.data
             if (data != null && data.scheme == "mms") {
                 val pdus = intent.getByteArrayExtra("data")
                 if (pdus != null) {
+                    // Parse MMS data using MmsParser
+                    val mms = MmsParser.parseFromPdu(pdus)
+                    // Pass the parsed Mms object to handleMms
                     handleMms(context, mms)
                 }
             }

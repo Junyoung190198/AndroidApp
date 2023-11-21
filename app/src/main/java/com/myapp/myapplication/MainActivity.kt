@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveToCsv(sender: String?, message: String?) {
+    fun saveToCsv(sender: String?, message: String?) {
         if (sender == null || message == null) {
             return
         }
