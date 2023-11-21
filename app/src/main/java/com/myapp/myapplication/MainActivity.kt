@@ -2,7 +2,6 @@ package com.myapp.myapplication
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
@@ -17,9 +16,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import android.content.IntentFilter
-import android.telephony.Telephony
-import android.telephony.SmsMessage
-import android.content.BroadcastReceiver
+import android.provider.Telephony
 
 
 
@@ -31,8 +28,7 @@ class MainActivity : AppCompatActivity() {
     ) { isGranted: Boolean ->
         if (isGranted) {
             Toast.makeText(this, "SMS permission accepted", Toast.LENGTH_SHORT).show()
-            setupSmsReceiver()
-            setupMmsReceiver()
+
         } else {
             Toast.makeText(this, "SMS permission denied", Toast.LENGTH_SHORT).show()
         }
@@ -50,17 +46,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val smsReceiver = SmsReceiver { sms -> handleSms(sms) }
+    private val smsReceiver = SmsReceiver()
 
-    private val mmsReceiver = MmsReceiver { mms: Mms -> handleMms(mms) }
+    private val mmsReceiver = MmsReceiver()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         smsTextView = findViewById(R.id.sms_text_view)
-
-        // Request permissions
-        requestSmsAndContactsPermissions()
     }
 
     private fun requestSmsAndContactsPermissions() {
@@ -94,23 +87,6 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(mmsReceiver, IntentFilter("android.provider.Telephony.WAP_PUSH_RECEIVED"))
     }
 
-    private fun handleSms(sms: SmsMessage) {
-        val sender = sms.originatingAddress
-        val messageBody = sms.messageBody
-        // Save the SMS data to a CSV file
-        saveToCsv(sender, messageBody)
-    }
-
-    fun handleMmsMessage(context: Context?, mms: Mms?) {
-        // Handle the MMS message here
-        if (mms != null) {
-            val sender = mms.sender
-            val message = mms.message
-
-            // Now, you can decide how to save or process the MMS data
-            saveToCsv(sender, message)
-        }
-    }
 
     fun saveToCsv(sender: String?, message: String?) {
         if (sender == null || message == null) {
@@ -150,10 +126,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
     fun onSaveToCsvButtonClick(view: View) {
-        // Trigger the process of reading SMS and MMS and saving to CSV
-        handleSms(smsObject)
-        handleMms(mmsObject)
+        requestSmsAndContactsPermissions()
     }
 
     override fun onDestroy() {

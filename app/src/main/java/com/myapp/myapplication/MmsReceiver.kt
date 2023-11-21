@@ -4,7 +4,6 @@ package com.myapp.myapplication
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.provider.Telephony
 
 
@@ -49,7 +48,13 @@ object MmsParser {
 
         for (i in pdu.indices) {
             if (pdu.copyOfRange(i, i + partStart.size).contentEquals(partStart)) {
-                val endIndex = pdu.indexOf(partEnd[0], i)
+                var endIndex = -1
+                for (j in i until pdu.size - partEnd.size + 1) {
+                    if (pdu.copyOfRange(j, j + partEnd.size).contentEquals(partEnd)) {
+                        endIndex = j
+                        break
+                    }
+                }
 
                 if (endIndex != -1) {
                     return i
