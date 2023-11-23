@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
+import android.database.Cursor
+import android.net.Uri
 
 
 
@@ -14,7 +16,7 @@ data class Mms(
 )
 
 object MmsParser {
-    fun parseFromPdu(pdu: ByteArray): Mms? {
+    fun parseFromPdu(pdu: ByteArray): Mms {
         // Simplified parsing logic assuming text is in the "body" or "text" part
         val sender = "MMS Sender"
         val message = extractTextFromPdu(pdu)
@@ -65,24 +67,54 @@ object MmsParser {
     }
 }
 
-    class MmsReceiver : BroadcastReceiver() {
+class MmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (Telephony.Sms.Intents.WAP_PUSH_RECEIVED_ACTION == intent?.action) {
-            val data = intent.data
-            if (data != null && data.scheme == "mms") {
-                val pdus = intent.getByteArrayExtra("data")
-                if (pdus != null) {
-                    // Parse MMS data using MmsParser
-                    val mms = MmsParser.parseFromPdu(pdus)
-                    // Pass the parsed Mms object to handleMms
-                    handleMms(context, mms)
+        // Query existing MMS messages from the inbox
+        val mmsMessages = getExistingMmsMessages(context)
+        saveMessagesToCsv(context, mmsMessages)
+    }
+
+    private fun getExistingMmsMessages(context: Context?): List<Mms> {
+        val messages = mutableListOf<Mms>()
+
+        val uri: Uri = Uri.parse("content://mms")
+        val cursor: Cursor? = context?.contentResolver?.query(uri, null, null, null, null)
+
+        cursor?.use {
+            while (it.moveToNext()) {
+                val mmsIdColumnIndex = it.getColumnIndex("_id")
+                if (mmsIdColumnIndex >= 0) {
+                    val mmsId = it.getString(mmsIdColumnIndex)
+                    val mmsPduColumnIndex = it.getColumnIndex("pdu")
+                    if (mmsPduColumnIndex < 0) {
+                        // Try alternative column names
+                        val alternativeColumnNames = listOf("m_data", "mms_data")
+                        for (columnName in alternativeColumnNames) {
+                            val alternativeIndex = it.getColumnIndex(columnName)
+                            if (alternativeIndex >= 0) {
+                                val mmsPdu = it.getBlob(alternativeIndex)
+                                val mms = MmsParser.parseFromPdu(mmsPdu)
+                                messages.add(mms)
+                                break
+                            }
+                        }
+                    } else {
+                        val mmsPdu = it.getBlob(mmsPduColumnIndex)
+                        val mms = MmsParser.parseFromPdu(mmsPdu)
+                        messages.add(mms)
+                    }
                 }
             }
         }
+
+        return messages
     }
 
-    private fun handleMms(context: Context?, mms: Mms?) {
-        // Call the function in MainActivity to save the MMS data
-        (context as? MainActivity)?.saveToCsv(mms?.sender, mms?.message)
+    private fun saveMessagesToCsv(context: Context?, messages: List<Mms>) {
+        // Your logic to save MMS messages to CSV
+        for (message in messages) {
+            (context as? MainActivity)?.saveToCsv(message.sender, message.message)
+        }
     }
 }
+

@@ -131,11 +131,19 @@ class MainActivity : AppCompatActivity() {
         requestSmsAndContactsPermissions()
     }
 
-    override fun onDestroy() {
-        // Unregister receivers to avoid memory leaks
+    override fun onPause() {
+        // Unregister receivers when the activity is no longer in the foreground
         unregisterReceiver(smsReceiver)
         unregisterReceiver(mmsReceiver)
 
-        super.onDestroy()
+        super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // Re-register receivers when the activity comes back to the foreground
+        setupSmsReceiver()
+        setupMmsReceiver()
     }
 }
