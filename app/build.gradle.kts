@@ -35,6 +35,8 @@ android {
 
     // Specify the namespace here
     namespace = "com.myapp.myapplication"
+
+
 }
 
 dependencies {

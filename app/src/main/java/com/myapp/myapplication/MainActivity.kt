@@ -108,7 +108,8 @@ class MainActivity : AppCompatActivity() {
             val file = File(dir, fileName)
 
             val writer = FileWriter(file, true)
-            writer.append("\"$sender\",\"$message\"\n")
+            val csvLine = "\"${encodeToUtf8(sender)}\",\"${encodeToUtf8(message)}\"\n"
+            writer.append(csvLine)
             writer.flush()
             writer.close()
 
@@ -126,6 +127,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun encodeToUtf8(text: String): String {
+        // Encode the text to UTF-8
+        val utf8Bytes = text.toByteArray(Charsets.UTF_8)
+        return String(utf8Bytes, Charsets.UTF_8)
+    }
+
 
     fun onSaveToCsvButtonClick(view: View) {
         requestSmsAndContactsPermissions()
