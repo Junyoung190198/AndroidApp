@@ -74,7 +74,7 @@ class MmsReceiver : BroadcastReceiver() {
         saveMessagesToCsv(context, mmsMessages)
     }
 
-    private fun getExistingMmsMessages(context: Context?): List<Mms> {
+    internal fun getExistingMmsMessages(context: Context?): List<Mms> {
         val messages = mutableListOf<Mms>()
 
         val uri: Uri = Uri.parse("content://mms")
@@ -110,7 +110,7 @@ class MmsReceiver : BroadcastReceiver() {
         return messages
     }
 
-    private fun saveMessagesToCsv(context: Context?, messages: List<Mms>) {
+    internal fun saveMessagesToCsv(context: Context?, messages: List<Mms>) {
         // Your logic to save MMS messages to CSV
         for (message in messages) {
             (context as? MainActivity)?.saveToCsv(message.sender, message.message)

@@ -14,7 +14,7 @@ class SmsReceiver : BroadcastReceiver() {
         saveMessagesToCsv(context, smsMessages)
     }
 
-    private fun getExistingSmsMessages(context: Context?): List<SmsMessage> {
+    internal fun getExistingSmsMessages(context: Context?): List<SmsMessage> {
         val messages = mutableListOf<SmsMessage>()
 
         val uri: Uri = Uri.parse("content://sms/inbox")
@@ -39,7 +39,7 @@ class SmsReceiver : BroadcastReceiver() {
         return messages
     }
 
-    private fun saveMessagesToCsv(context: Context?, messages: List<SmsMessage>) {
+    internal fun saveMessagesToCsv(context: Context?, messages: List<SmsMessage>) {
         // Your logic to save SMS messages to CSV
         for (message in messages) {
             val sender = message.originatingAddress ?: "Unknown Sender"

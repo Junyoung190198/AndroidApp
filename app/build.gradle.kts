@@ -18,7 +18,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 
@@ -35,9 +38,20 @@ android {
 
     // Specify the namespace here
     namespace = "com.myapp.myapplication"
-
-
 }
+
+repositories {
+    google()
+    mavenCentral()
+    maven {
+        url = uri("https://jitpack.io")
+        credentials {
+            username = findProperty("authToken") as String? ?: ""
+        }
+    }
+}
+
+
 
 dependencies {
     implementation("androidx.core:core-ktx:1.9.0")
@@ -50,7 +64,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.8")
 
     // Use the latest version available on Maven Central
-    implementation("com.github.andiradulescu:androidmms:1.1.1")
+    implementation ("com.github.mikaelhg:nondroid-mms:0ac06a5")
 
     implementation("com.squareup.okhttp3:okhttp:4.9.2")
     testImplementation("junit:junit:4.13.2")

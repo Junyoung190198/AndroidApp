@@ -54,6 +54,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         smsTextView = findViewById(R.id.sms_text_view)
+
+        // Request permissions when the app starts
+        requestSmsAndContactsPermissions()
     }
 
     private fun requestSmsAndContactsPermissions() {
@@ -136,8 +139,33 @@ class MainActivity : AppCompatActivity() {
 
 
     fun onSaveToCsvButtonClick(view: View) {
-        requestSmsAndContactsPermissions()
+        // Check if SMS and Contacts permissions are granted
+        val smsPermission = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_SMS
+        )
+        val contactsPermission = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_CONTACTS
+        )
+
+        if (smsPermission == PackageManager.PERMISSION_GRANTED && contactsPermission == PackageManager.PERMISSION_GRANTED) {
+            // Permissions are granted, proceed to retrieve SMS and MMS data
+
+            // Retrieve and save SMS messages
+            val smsMessages = smsReceiver.getExistingSmsMessages(this)
+            smsReceiver.saveMessagesToCsv(this, smsMessages)
+
+            // Retrieve and save MMS messages
+            val mmsMessages = mmsReceiver.getExistingMmsMessages(this)
+            mmsReceiver.saveMessagesToCsv(this, mmsMessages)
+
+        } else {
+            // Permissions are not granted, show a message or request permissions again
+            Toast.makeText(this, "Please grant SMS and Contacts permissions", Toast.LENGTH_SHORT).show()
+        }
     }
+
 
     override fun onPause() {
         // Unregister receivers when the activity is no longer in the foreground
