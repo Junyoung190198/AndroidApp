@@ -23,28 +23,6 @@ import android.provider.Telephony
 class MainActivity : AppCompatActivity() {
     private var smsTextView: TextView? = null
 
-    private val requestSmsPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            Toast.makeText(this, "SMS permission accepted", Toast.LENGTH_SHORT).show()
-
-        } else {
-            Toast.makeText(this, "SMS permission denied", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private val requestContactsPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            Toast.makeText(this@MainActivity, "Contacts permission accepted", Toast.LENGTH_SHORT)
-                .show()
-        } else {
-            Toast.makeText(this@MainActivity, "Contacts permission denied", Toast.LENGTH_SHORT)
-                .show()
-        }
-    }
 
     private val smsReceiver = SmsReceiver()
 
@@ -59,26 +37,41 @@ class MainActivity : AppCompatActivity() {
         requestSmsAndContactsPermissions()
     }
 
-    private fun requestSmsAndContactsPermissions() {
-        val smsPermission = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.READ_SMS
-        )
-        val contactsPermission = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.READ_CONTACTS
-        )
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions: Map<String, Boolean> ->
+            if (permissions.all { it.value }) {
+                Toast.makeText(this, "Permissions accepted", Toast.LENGTH_SHORT).show()
+                setupReceivers()
+            } else {
+                Toast.makeText(this, "Permissions denied", Toast.LENGTH_SHORT).show()
+            }
+        }
 
-        if (smsPermission != PackageManager.PERMISSION_GRANTED || contactsPermission != PackageManager.PERMISSION_GRANTED) {
-            // Request permissions
-            requestSmsPermissionLauncher.launch(Manifest.permission.READ_SMS)
-            requestContactsPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+
+
+    private fun requestSmsAndContactsPermissions() {
+        val smsPermission = Manifest.permission.READ_SMS
+        val contactsPermission = Manifest.permission.READ_CONTACTS
+
+        val permissionsToRequest = mutableListOf<String>()
+
+        if (ContextCompat.checkSelfPermission(this, smsPermission) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(smsPermission)
+        }
+
+        if (ContextCompat.checkSelfPermission(this, contactsPermission) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(contactsPermission)
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            val permissionsArray = permissionsToRequest.toTypedArray()
+            requestPermissionLauncher.launch(permissionsArray)
         } else {
             // Permissions already granted, set up receivers
-            setupSmsReceiver()
-            setupMmsReceiver()
+            setupReceivers()
         }
     }
+
 
     private fun setupSmsReceiver() {
         // Register SMS receiver
@@ -89,55 +82,13 @@ class MainActivity : AppCompatActivity() {
         // Register MMS receiver
         registerReceiver(mmsReceiver, IntentFilter("android.provider.Telephony.WAP_PUSH_RECEIVED"))
     }
-
-
-    fun saveToCsv(sender: String?, message: String?) {
-        if (sender == null || message == null) {
-            return
-        }
-
-        try {
-            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-            val fileName = "sms_data_$timeStamp.csv"
-
-            val dir = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                "SmsData"
-            )
-            if (!dir.exists()) {
-                dir.mkdirs()
-            }
-
-            val file = File(dir, fileName)
-
-            val writer = FileWriter(file, true)
-            val csvLine = "\"${encodeToUtf8(sender)}\",\"${encodeToUtf8(message)}\"\n"
-            writer.append(csvLine)
-            writer.flush()
-            writer.close()
-
-            runOnUiThread {
-                Toast.makeText(this@MainActivity, "Data saved to $file", Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-            runOnUiThread {
-                Toast.makeText(
-                    this@MainActivity,
-                    "Error saving data to CSV file",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-    }
-
-    private fun encodeToUtf8(text: String): String {
-        // Encode the text to UTF-8
-        val utf8Bytes = text.toByteArray(Charsets.UTF_8)
-        return String(utf8Bytes, Charsets.UTF_8)
+    private fun setupReceivers() {
+        setupSmsReceiver()
+        setupMmsReceiver()
     }
 
 
+    // Modify onSaveToCsvButtonClick to pass isMms parameter to saveToCsv
     fun onSaveToCsvButtonClick(view: View) {
         // Check if SMS and Contacts permissions are granted
         val smsPermission = ContextCompat.checkSelfPermission(
@@ -162,9 +113,103 @@ class MainActivity : AppCompatActivity() {
 
         } else {
             // Permissions are not granted, show a message or request permissions again
-            Toast.makeText(this, "Please grant SMS and Contacts permissions", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Please grant SMS and Contacts permissions",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
+
+
+    private fun encodeToUtf8(text: String): String {
+        // Encode the text to UTF-8
+        val utf8Bytes = text.toByteArray(Charsets.UTF_8)
+        return String(utf8Bytes, Charsets.UTF_8)
+    }
+
+    fun saveSmsToCsv(sender: String?, message: String?) {
+        if (sender == null || message == null) {
+            return
+        }
+
+        try {
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val fileType = "sms"
+            val fileName = "${fileType}_data_$timeStamp.csv"
+
+            val dir = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "SmsData"
+            )
+            if (!dir.exists()) {
+                dir.mkdirs()
+            }
+
+            val file = File(dir, fileName)
+
+            val writer = FileWriter(file, true)
+            val csvLine = "\"${encodeToUtf8(sender)}\",\"${encodeToUtf8(message)}\"\n"
+            writer.append(csvLine)
+            writer.flush()
+            writer.close()
+
+            runOnUiThread {
+                Toast.makeText(this@MainActivity, "SMS data saved to $file", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            runOnUiThread {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Error saving SMS data to CSV file",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    fun saveMmsToCsv(sender: String?, message: String?) {
+        if (sender == null || message == null) {
+            return
+        }
+
+        try {
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val fileType = "mms"
+            val fileName = "${fileType}_data_$timeStamp.csv"
+
+            val dir = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "SmsData"
+            )
+            if (!dir.exists()) {
+                dir.mkdirs()
+            }
+
+            val file = File(dir, fileName)
+
+            val writer = FileWriter(file, true)
+            val csvLine = "\"${encodeToUtf8(sender)}\",\"${encodeToUtf8(message)}\"\n"
+            writer.append(csvLine)
+            writer.flush()
+            writer.close()
+
+            runOnUiThread {
+                Toast.makeText(this@MainActivity, "MMS data saved to $file", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            runOnUiThread {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Error saving MMS data to CSV file",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
 
 
     override fun onPause() {
