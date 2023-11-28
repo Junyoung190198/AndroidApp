@@ -1,47 +1,89 @@
-// SmsReceiver.kt
 package com.myapp.myapplication
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.database.Cursor
-import android.net.Uri
-import android.provider.Telephony
-
-data class SmsMessageData(
-    val sender: String?,
-    val message: String?
-)
-
-object SmsParser {
-    fun parseFromCursor(cursor: Cursor): SmsMessageData {
-        val sender = cursor.getString(cursor.getColumnIndexOrThrow("addres"))
-        val messageBody = cursor.getString(cursor.getColumnIndexOrThrow("body"))
-
-        return SmsMessageData(sender, messageBody)
-    }
-}
+import android.os.Environment
+import android.telephony.SmsMessage
+import org.json.JSONObject
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
 
 class SmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        // Logic for handling SMS received broadcast
-    }
+        if (intent?.action == "android.provider.Telephony.SMS_RECEIVED") {
+            val bundle = intent.extras
+            if (bundle != null) {
+                val pdus = bundle.get("pdus") as Array<*>?
+                if (pdus != null) {
+                    for (pdu in pdus) {
+                        val message = SmsMessage.createFromPdu(pdu as ByteArray)
+                        val smsContent = encodeToUtf8(message.messageBody)
 
-    internal fun getExistingSmsMessages(context: Context?): List<SmsMessageData> {
-        val messages = mutableListOf<SmsMessageData>()
+                        // Handle nullable originatingAddress
+                        val sender = message.originatingAddress ?: "Unknown"
 
-        // Use Telephony.Sms.Inbox.CONTENT_URI for querying the inbox
-        val uri: Uri = Telephony.Sms.Inbox.CONTENT_URI
-
-        val cursor: Cursor? = context?.contentResolver?.query(uri, null, null, null, null)
-
-        cursor?.use {
-            while (it.moveToNext()) {
-                val smsData = SmsParser.parseFromCursor(it)
-                messages.add(smsData)
+                        // Save SMS content to CSV and JSON
+                        saveToCsv("sms_data.csv", sender, smsContent)
+                        saveToJson("sms_data.json", sender, smsContent)
+                    }
+                }
             }
         }
+    }
 
-        return messages
+    private fun saveToCsv(fileName: String, sender: String, content: String) {
+        try {
+            val directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val messageDataDirectory = File(directory, "Message_data")
+            if (!messageDataDirectory.exists()) {
+                messageDataDirectory.mkdirs()
+            }
+
+            val csvFile = File(messageDataDirectory, fileName)
+            val writer = FileWriter(csvFile, true) // 'true' for append mode
+            writer.append("$sender,$content\n")
+            writer.flush()
+            writer.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun saveToJson(fileName: String, sender: String, content: String) {
+        try {
+            val directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val messageDataDirectory = File(directory, "Message_data")
+            if (!messageDataDirectory.exists()) {
+                messageDataDirectory.mkdirs()
+            }
+
+            val jsonFile = File(messageDataDirectory, fileName)
+            val jsonObject = JSONObject()
+            jsonObject.put("timestamp", getCurrentTimestamp())
+            jsonObject.put("sender", sender)
+            jsonObject.put("content", content)
+
+            val writer = FileWriter(jsonFile, true) // 'true' for append mode
+            writer.append(jsonObject.toString() + "\n")
+            writer.flush()
+            writer.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun getCurrentTimestamp(): String {
+        val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault())
+        return sdf.format(Date())
+    }
+
+    private fun encodeToUtf8(text: String): String {
+        // Encode the text to UTF-8
+        val utf8Bytes = text.toByteArray(Charsets.UTF_8)
+        return String(utf8Bytes, Charsets.UTF_8)
     }
 }
