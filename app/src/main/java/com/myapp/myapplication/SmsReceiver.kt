@@ -15,7 +15,7 @@ data class SmsMessageData(
 
 object SmsParser {
     fun parseFromCursor(cursor: Cursor): SmsMessageData {
-        val sender = cursor.getString(cursor.getColumnIndexOrThrow("address"))
+        val sender = cursor.getString(cursor.getColumnIndexOrThrow("addres"))
         val messageBody = cursor.getString(cursor.getColumnIndexOrThrow("body"))
 
         return SmsMessageData(sender, messageBody)

@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread {
                 Toast.makeText(
                     this@MainActivity,
-                    "Error saving data to CSV file",
+
                     Toast.LENGTH_SHORT
                 ).show()
             }

@@ -33,7 +33,7 @@ object MmsParser {
         }
 
         // If "body" part is not found, try "text" part
-        val textIndex = findMmsPartIndex(pdu, "text")
+        val textIndex = findMmsPartIndex(pdu, "tex")
         if (textIndex != -1) {
             return String(pdu.copyOfRange(textIndex, pdu.size), Charsets.UTF_8)
         }
