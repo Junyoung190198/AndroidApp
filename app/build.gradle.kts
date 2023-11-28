@@ -1,6 +1,6 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.android") version "1.9.0" // Check for the latest version
 }
 
 android {
@@ -51,8 +51,6 @@ repositories {
     }
 }
 
-
-
 dependencies {
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
@@ -62,9 +60,10 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:2.7.4")
     implementation("com.opencsv:opencsv:5.5")
     implementation("com.google.code.gson:gson:2.8.8")
+    implementation ("com.google.android.mms:pdu_alt:1.0")
 
     // Use the latest version available on Maven Central
-    implementation ("com.github.mikaelhg:nondroid-mms:0ac06a5")
+    implementation("com.github.mikaelhg:nondroid-mms:0ac06a5")
 
     implementation("com.squareup.okhttp3:okhttp:4.9.2")
     testImplementation("junit:junit:4.13.2")
