@@ -1,36 +1,31 @@
+// SmsReceiver.kt
 package com.myapp.myapplication
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Environment
-import android.telephony.SmsMessage
 import org.json.JSONObject
 import java.io.File
 import java.io.FileWriter
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
+import android.provider.Telephony
+
 
 class SmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent?.action == "android.provider.Telephony.SMS_RECEIVED") {
-            val bundle = intent.extras
-            if (bundle != null) {
-                val pdus = bundle.get("pdus") as Array<*>?
-                if (pdus != null) {
-                    for (pdu in pdus) {
-                        val message = SmsMessage.createFromPdu(pdu as ByteArray)
-                        val smsContent = encodeToUtf8(message.messageBody)
+        if (intent?.action == Telephony.Sms.Intents.SMS_RECEIVED_ACTION) {
+            val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
+            for (message in messages) {
+                val smsContent = encodeToUtf8(message.messageBody)
 
-                        // Handle nullable originatingAddress
-                        val sender = message.originatingAddress ?: "Unknown"
+                // Handle nullable originatingAddress
+                val sender = message.originatingAddress ?: "Unknown"
 
-                        // Save SMS content to CSV and JSON
-                        saveToCsv("sms_data.csv", sender, smsContent)
-                        saveToJson("sms_data.json", sender, smsContent)
-                    }
-                }
+                // Save SMS content to CSV and JSON
+                saveToCsv("sms_data.csv", sender, smsContent)
+                saveToJson("sms_data.json", sender, smsContent)
             }
         }
     }

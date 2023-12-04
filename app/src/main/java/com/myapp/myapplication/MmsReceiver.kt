@@ -1,4 +1,13 @@
-// MmsReceiver.kt
+
+
+
+
+
+
+
+
+/*
+
 package com.myapp.myapplication
 
 import android.content.BroadcastReceiver
@@ -117,3 +126,5 @@ class MmsReceiver : BroadcastReceiver() {
         return messages
     }
 }
+
+ */

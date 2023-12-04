@@ -33,6 +33,12 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name=".MessageBackgroundService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <!--
         <receiver
             android:name=".MmsReceiver"
             android:enabled="true"
@@ -42,6 +48,7 @@
                 <data android:mimeType="application/vnd.wap.mms-message" />
             </intent-filter>
         </receiver>
+        -->
 
         <receiver
             android:name=".SmsReceiver"
@@ -49,6 +56,16 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
     </application>

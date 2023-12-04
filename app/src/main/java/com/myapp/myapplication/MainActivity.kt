@@ -3,52 +3,28 @@ package com.myapp.myapplication
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Environment
-import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import java.io.File
-import java.io.FileWriter
-import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.*
-import android.telephony.SmsMessage
+import android.content.Intent
+
 
 
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var smsReceiver: SmsReceiver
-    private lateinit var mmsReceiver: MmsReceiver
+    private lateinit var serviceIntent: Intent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Request permissions when the app starts
+        // Request SMS and Contacts permissions when the app is launched
         requestSmsAndContactsPermissions()
 
-        // Register SMS receiver
-        smsReceiver = SmsReceiver()
-        val smsFilter = IntentFilter("android.provider.Telephony.SMS_RECEIVED")
-        registerReceiver(smsReceiver, smsFilter)
-
-        // Register MMS receiver
-        mmsReceiver = MmsReceiver()
-        val mmsFilter = IntentFilter("android.provider.Telephony.WAP_PUSH_RECEIVED")
-        mmsFilter.addDataScheme("sms")
-        mmsFilter.addDataAuthority("*", "*")
-        registerReceiver(mmsReceiver, mmsFilter)
-    }
-
-    override fun onDestroy() {
-        // Unregister receivers when the app is destroyed
-        unregisterReceiver(smsReceiver)
-        unregisterReceiver(mmsReceiver)
-        super.onDestroy()
+        serviceIntent = Intent(this, MessageBackgroundService::class.java)
+        startService(serviceIntent)
     }
 
     private val requestPermissionsLauncher =
