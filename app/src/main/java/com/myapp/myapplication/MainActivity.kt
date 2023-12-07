@@ -3,18 +3,27 @@ package com.myapp.myapplication
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import android.content.Intent
-
-
-
+import android.content.BroadcastReceiver
+import android.content.Context
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var serviceIntent: Intent
+    private lateinit var smsTextView: TextView
+    private val smsReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "SMS_RECEIVED") {
+                val capturedSms = intent.getStringExtra("sms_content")
+                updateTextView(capturedSms)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +34,10 @@ class MainActivity : AppCompatActivity() {
 
         serviceIntent = Intent(this, MessageBackgroundService::class.java)
         startService(serviceIntent)
+
+        smsTextView = findViewById(R.id.sms_text_view)
+
+
     }
 
     private val requestPermissionsLauncher =
@@ -56,7 +69,14 @@ class MainActivity : AppCompatActivity() {
             requestPermissionsLauncher.launch(permissionsArray)
         } else {
             // Permissions already granted, show a message
-            Toast.makeText(this, "Press the button to retrieve and save SMS and MMS data", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "All premissions granted", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateTextView(capturedSms: String?) {
+        capturedSms?.let {
+            // Append the captured SMS to the TextView
+            smsTextView.append("\n\n$it")
         }
     }
 }

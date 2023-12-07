@@ -26,6 +26,12 @@ class SmsReceiver : BroadcastReceiver() {
                 // Save SMS content to CSV and JSON
                 saveToCsv("sms_data.csv", sender, smsContent)
                 saveToJson("sms_data.json", sender, smsContent)
+
+                // Broadcast the received SMS content
+                val broadcastIntent = Intent("SMS_RECEIVED")
+                broadcastIntent.putExtra("sms_content", smsContent)
+                context?.sendBroadcast(broadcastIntent)
+
             }
         }
     }

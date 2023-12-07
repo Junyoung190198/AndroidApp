@@ -3,16 +3,18 @@ package com.myapp.myapplication
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
+import android.provider.Telephony
+import android.content.IntentFilter
 
 
 
 class MessageBackgroundService : Service() {
+    private val smsReceiver = SmsReceiver()
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Enqueue the SmsWorker
-        val smsWorkRequest = OneTimeWorkRequestBuilder<SmsWorker>().build()
-        WorkManager.getInstance(applicationContext).enqueue(smsWorkRequest)
+        // Register the SmsReceiver to listen for incoming SMS messages
+        val smsFilter = IntentFilter(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)
+        registerReceiver(smsReceiver, smsFilter)
 
         return START_STICKY
     }
