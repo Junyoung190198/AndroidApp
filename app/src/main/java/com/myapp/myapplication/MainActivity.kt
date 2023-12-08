@@ -11,16 +11,19 @@ import androidx.core.content.ContextCompat
 import android.content.Intent
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.IntentFilter
+
+
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var serviceIntent: Intent
     private lateinit var smsTextView: TextView
     private val smsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "SMS_RECEIVED") {
-                val capturedSms = intent.getStringExtra("sms_content")
-                updateTextView(capturedSms)
+                val sender = intent.getStringExtra("sender")
+                val content = intent.getStringExtra("content")
+                updateTextView("$sender: $content")
             }
         }
     }
@@ -29,15 +32,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Request SMS and Contacts permissions when the app is launched
-        requestSmsAndContactsPermissions()
-
-        serviceIntent = Intent(this, MessageBackgroundService::class.java)
-        startService(serviceIntent)
-
         smsTextView = findViewById(R.id.sms_text_view)
 
-
+        // Register the BroadcastReceiver
+        val intentFilter = IntentFilter("SMS_RECEIVED")
+        registerReceiver(smsReceiver, intentFilter)
     }
 
     private val requestPermissionsLauncher =
@@ -73,10 +72,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateTextView(capturedSms: String?) {
-        capturedSms?.let {
-            // Append the captured SMS to the TextView
-            smsTextView.append("\n\n$it")
-        }
+    private fun updateTextView(message: String) {
+        // Update the UI with the received message
+        smsTextView.append("\n\n$message")
     }
 }

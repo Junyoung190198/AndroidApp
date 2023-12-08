@@ -12,8 +12,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import android.provider.Telephony
 
-
 class SmsReceiver : BroadcastReceiver() {
+
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent?.action == Telephony.Sms.Intents.SMS_RECEIVED_ACTION) {
             val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
@@ -23,15 +23,22 @@ class SmsReceiver : BroadcastReceiver() {
                 // Handle nullable originatingAddress
                 val sender = message.originatingAddress ?: "Unknown"
 
-                // Save SMS content to CSV and JSON
+                // Send broadcast with SMS details to MessageBackgroundService
+                val broadcastIntent = Intent(context, MessageBackgroundService::class.java)
+                broadcastIntent.action = MessageBackgroundService.ACTION_NEW_SMS
+                broadcastIntent.putExtra("sender", sender)
+                broadcastIntent.putExtra("content", smsContent)
+                context?.startService(broadcastIntent)
+
+                // Send broadcast with SMS details to MainActivity
+                val mainActivityIntent = Intent("SMS_RECEIVED")
+                mainActivityIntent.putExtra("sender", sender)
+                mainActivityIntent.putExtra("content", smsContent)
+                context?.sendBroadcast(mainActivityIntent)
+
+                // Save SMS content to CSV and JSON (if needed)
                 saveToCsv("sms_data.csv", sender, smsContent)
                 saveToJson("sms_data.json", sender, smsContent)
-
-                // Broadcast the received SMS content
-                val broadcastIntent = Intent("SMS_RECEIVED")
-                broadcastIntent.putExtra("sms_content", smsContent)
-                context?.sendBroadcast(broadcastIntent)
-
             }
         }
     }
