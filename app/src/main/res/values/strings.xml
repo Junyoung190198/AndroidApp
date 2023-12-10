@@ -6,6 +6,10 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    <string name="sms_details">Sender: %1$s\nMessage: %2$s\nDate: %3$s</string>
+    <string name="default_date_format">yyyy-MM-dd HH:mm:ss</string>
+    <string name="default_sms_message">Incoming SMS Messages</string>
+
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
